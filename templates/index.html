@@ -56,6 +56,9 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="mt-4">
+                    <canvas id="rssChart"></canvas>
+                </div>
             </div>
             <!-- Google Trends -->
             <div class="tab-pane fade" id="google" role="tabpanel" aria-labelledby="google-tab">
@@ -79,6 +82,9 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="mt-4">
+                    <canvas id="googleChart"></canvas>
+                </div>
             </div>
             <!-- Reddit Trends -->
             <div class="tab-pane fade" id="reddit" role="tabpanel" aria-labelledby="reddit-tab">
@@ -102,11 +108,15 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="mt-4">
+                    <canvas id="redditChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Search functionality
         document.querySelectorAll('input[type="text"]').forEach(input => {
@@ -132,6 +142,45 @@
             });
             rows.forEach(row => table.appendChild(row));
         }
+
+        // Графики для каждой вкладки
+        const createChart = (chartId, data, labels) => {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sentiment',
+                        data: data,
+                        backgroundColor: data.map(value => value > 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                        borderColor: data.map(value => value > 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Sentiment Analysis' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        };
+
+        // Данные для графиков
+        const rssData = [{% for trend in rss_data %}{{ trend[1] }},{% endfor %}];
+        const googleData = [{% for trend in google_data %}{{ trend[1] }},{% endfor %}];
+        const redditData = [{% for trend in reddit_data %}{{ trend[1] }},{% endfor %}];
+        const labels = [{% for trend in rss_data %}"{{ trend[0] }}",{% endfor %}];
+
+        // Создаём графики
+        createChart('rssChart', rssData, labels);
+        createChart('googleChart', googleData, labels);
+        createChart('redditChart', redditData, labels);
     </script>
 </body>
 </html>
