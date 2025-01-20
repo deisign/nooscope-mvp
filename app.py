@@ -3,6 +3,9 @@ import sqlite3
 from textblob import TextBlob
 from flask import Flask, render_template, request
 import feedparser
+import praw
+import tweepy
+from pytrends.request import TrendReq
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -45,6 +48,40 @@ def fetch_rss_feed(feed_url):
         date = entry.published if 'published' in entry else "Unknown"
         save_to_db("RSS Feed", topic, content, sentiment, date)
 
+# Fetch Google Trends
+def fetch_google_trends():
+    pytrends = TrendReq(hl='en-US', tz=360)
+    trending_searches = pytrends.trending_searches()
+    for index, row in trending_searches.iterrows():
+        topic = row[0]
+        content = f"Trending on Google: {topic}"
+        sentiment = TextBlob(content).sentiment.polarity
+        save_to_db("Google Trends", topic, content, sentiment, "Unknown")
+
+# Fetch Reddit Trends
+def fetch_reddit_trends():
+    reddit = praw.Reddit(
+        client_id='lrVT6QJkGF14uzjxK-Z3Kg',
+        client_secret='kbaq0S-FnCuyCCueBUddQDwa-U4YjQ',
+        user_agent='nooscope'
+    )
+    for submission in reddit.subreddit('all').hot(limit=10):
+        topic = submission.title
+        content = f"Trending on Reddit: {topic}"
+        sentiment = TextBlob(content).sentiment.polarity
+        date = submission.created_utc
+        save_to_db("Reddit Trends", topic, content, sentiment, date)
+
+# Fetch Twitter Trends
+def fetch_twitter_trends():
+    client = tweepy.Client(bearer_token='AAAAAAAAAAAAAAAAAAAAACBnyQEAAAAAswY40ue8%2FaTrgouJcqlpHqwrkRw%3DHP9019TkXpIfad8tZ1s6IPJho5TSxb7w5Yurz9q1eRkCx8WtmK')
+    trends = client.get_place_trends(id=1)  # ID 1 = Worldwide
+    for trend in trends[0]['trends'][:10]:
+        topic = trend['name']
+        content = f"Trending on Twitter: {topic}"
+        sentiment = TextBlob(content).sentiment.polarity
+        save_to_db("Twitter Trends", topic, content, sentiment, "Unknown")
+
 # Flask routes
 @app.route('/')
 def index():
@@ -64,6 +101,9 @@ def add_source():
 # Initialize database and fetch initial data
 if __name__ == '__main__':
     init_db()
+    fetch_google_trends()
+    fetch_reddit_trends()
+    fetch_twitter_trends()
     fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml")
     fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/World.xml")
     fetch_rss_feed("https://feeds.bbci.co.uk/news/rss.xml")
