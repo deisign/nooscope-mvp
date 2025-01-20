@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nooscope Trends</title>
+</head>
+<body>
+    <h1>Nooscope Trends</h1>
+    <ul>
+        {% for trend in trends %}
+            <li>
+                <strong>{{ trend[1] }}</strong> ({{ trend[0] }}) - Sentiment: {{ trend[2] }}<br>
+                Published: {{ trend[3] }}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
