@@ -1,6 +1,5 @@
 import requests
 import sqlite3
-from bs4 import BeautifulSoup
 from textblob import TextBlob
 from flask import Flask, render_template, request
 import feedparser
@@ -36,21 +35,6 @@ def save_to_db(source, topic, content, sentiment, date):
     conn.commit()
     conn.close()
 
-# Fetch data from a news API
-def fetch_news():
-    api_key = "884e81da0bee450c8fa466e3db90efc9"  # Replace with your API key
-    url = f"https://newsapi.org/v2/top-headlines?country=us&apiKey={api_key}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        articles = response.json().get('articles', [])
-        for article in articles:
-            source = article['source']['name']
-            topic = article['title']
-            content = article['description'] or ''
-            sentiment = TextBlob(content).sentiment.polarity
-            date = article['publishedAt']
-            save_to_db(source, topic, content, sentiment, date)
-
 # Fetch data from an RSS feed
 def fetch_rss_feed(feed_url):
     feed = feedparser.parse(feed_url)
@@ -61,23 +45,12 @@ def fetch_rss_feed(feed_url):
         date = entry.published if 'published' in entry else "Unknown"
         save_to_db("RSS Feed", topic, content, sentiment, date)
 
-# Web scraper for additional sources
-def scrape_website(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    articles = soup.find_all('h2')  # Adjust tag based on the website structure
-    for article in articles:
-        topic = article.get_text()
-        content = article.get_text()
-        sentiment = TextBlob(content).sentiment.polarity
-        save_to_db("Custom Source", topic, content, sentiment, "2025-01-20")
-
 # Flask routes
 @app.route('/')
 def index():
     conn = sqlite3.connect('noscope.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT source, topic, sentiment, date FROM trends ORDER BY date DESC LIMIT 10")
+    cursor.execute("SELECT source, topic, sentiment, date FROM trends ORDER BY date DESC LIMIT 100")
     rows = cursor.fetchall()
     conn.close()
     return render_template('index.html', trends=rows)
@@ -85,12 +58,14 @@ def index():
 @app.route('/add-source', methods=['POST'])
 def add_source():
     url = request.form['url']
-    scrape_website(url)
-    return "Data scraped successfully!"
+    fetch_rss_feed(url)
+    return "RSS feed data added successfully!"
 
 # Initialize database and fetch initial data
 if __name__ == '__main__':
     init_db()
-    fetch_news()
     fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml")
+    fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/World.xml")
+    fetch_rss_feed("https://feeds.bbci.co.uk/news/rss.xml")
+    fetch_rss_feed("https://www.theguardian.com/world/rss")
     app.run(host="0.0.0.0", port=5000, debug=True)
