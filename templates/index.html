@@ -7,13 +7,18 @@
 </head>
 <body>
     <h1>Nooscope Trends</h1>
-    <ul>
-        {% for trend in trends %}
-            <li>
-                <strong>{{ trend[1] }}</strong> ({{ trend[0] }}) - Sentiment: {{ trend[2] }}<br>
-                Published: {{ trend[3] }}
-            </li>
-        {% endfor %}
-    </ul>
+    {% if trends %}
+        <ul>
+            {% for trend in trends %}
+                <li>
+                    <strong>{{ trend[1] }}</strong> (Source: {{ trend[0] }})<br>
+                    Sentiment: {{ trend[2] }}<br>
+                    Published: {{ trend[3] }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No trends available. Fetch or add some data!</p>
+    {% endif %}
 </body>
 </html>
