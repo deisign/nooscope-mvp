@@ -4,9 +4,7 @@ from textblob import TextBlob
 from flask import Flask, render_template, request
 import feedparser
 import praw
-import tweepy
 from pytrends.request import TrendReq
-import time
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -73,22 +71,6 @@ def fetch_reddit_trends():
         date = submission.created_utc
         save_to_db("Reddit Trends", topic, content, sentiment, date)
 
-# Fetch Twitter Trends
-def fetch_twitter_trends():
-    client = tweepy.Client(bearer_token='AAAAAAAAAAAAAAAAAAAAACBnyQEAAAAAswY40ue8%2FaTrgouJcqlpHqwrkRw%3DHP9019TkXpIfad8tZ1s6IPJho5TSxb7w5Yurz9q1eRkCx8WtmK')
-    try:
-        response = client.search_recent_tweets(query="#", max_results=10)
-        if response.data:
-            for tweet in response.data:
-                topic = tweet.text[:50]  # Truncate to 50 characters
-                content = f"Trending Tweet: {tweet.text}"
-                sentiment = TextBlob(content).sentiment.polarity
-                save_to_db("Twitter Trends", topic, content, sentiment, "Unknown")
-        time.sleep(15)  # Add delay to respect rate limits
-    except tweepy.errors.TooManyRequests:
-        print("Rate limit exceeded. Waiting before retrying...")
-        time.sleep(900)  # Wait 15 minutes before retrying
-
 # Flask routes
 @app.route('/')
 def index():
@@ -110,7 +92,6 @@ if __name__ == '__main__':
     init_db()
     fetch_google_trends()
     fetch_reddit_trends()
-    fetch_twitter_trends()
     fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml")
     fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/World.xml")
     fetch_rss_feed("https://feeds.bbci.co.uk/news/rss.xml")
