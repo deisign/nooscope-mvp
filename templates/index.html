@@ -153,44 +153,16 @@
             rows.forEach(row => table.appendChild(row));
         }
 
-        // Графики для каждой вкладки
-        const createChart = (chartId, data, labels) => {
-            const ctx = document.getElementById(chartId).getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Sentiment',
-                        data: data,
-                        backgroundColor: data.map(value => value > 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
-                        borderColor: data.map(value => value > 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Sentiment Analysis' }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        };
+        // Тестовые данные для проверки графиков
+        const testLabels = ['2023-01-01', '2023-01-02', '2023-01-03'];
+        const testData = [10, 20, 30];
 
         // Круговая диаграмма
         const sourceData = {
             labels: ['RSS Feeds', 'Google Trends', 'Reddit Trends'],
             datasets: [{
                 label: 'Source Distribution',
-                data: [
-                    {{ rss_data|length }},
-                    {{ google_data|length }},
-                    {{ reddit_data|length }}
-                ],
+                data: [50, 30, 20], // Тестовые данные
                 backgroundColor: ['#007BFF', '#FFC107', '#28A745'],
                 hoverOffset: 4
             }]
@@ -210,15 +182,31 @@
         });
 
         // Линейный график
-        const lineLabels = [
-            {% for trend in rss_data %}"{{ trend[2] }}",{% endfor %}
-            {% for trend in google_data %}"{{ trend[2] }}",{% endfor %}
-            {% for trend in reddit_data %}"{{ trend[2] }}",{% endfor %}
-        ];
-        const lineData = [
-            {% for trend in rss_data %}{{ trend[1] }},{% endfor %}
-            {% for trend in google_data %}{{ trend[1] }},{% endfor %}
-            {% for trend in reddit_data %}{{ trend[1] }},{% endfor %}
-        ];
-
-        const lineCtx = document.getElementById('sentiment
+        const lineCtx = document.getElementById('sentimentLineChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: testLabels, // Тестовые данные
+                datasets: [{
+                    label: 'Sentiment',
+                    data: testData, // Тестовые данные
+                    borderColor: '#007BFF',
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    title: { display: true, text: 'Sentiment Over Time' }
+                },
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Date' } },
+                    y: { display: true, title: { display: true, text: 'Sentiment' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
