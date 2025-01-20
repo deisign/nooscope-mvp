@@ -15,6 +15,13 @@
             text-align: center;
             color: #333;
         }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -27,6 +34,7 @@
         th, td {
             padding: 12px 15px;
             text-align: left;
+            cursor: pointer;
         }
         th {
             background-color: #007BFF;
@@ -39,13 +47,14 @@
 </head>
 <body>
     <h1>Nooscope Trends</h1>
-    <table>
+    <input type="text" id="searchInput" placeholder="Search for topics...">
+    <table id="trendsTable">
         <thead>
             <tr>
-                <th>Source</th>
-                <th>Topic</th>
-                <th>Sentiment</th>
-                <th>Date</th>
+                <th onclick="sortTable(0)">Source</th>
+                <th onclick="sortTable(1)">Topic</th>
+                <th onclick="sortTable(2)">Sentiment</th>
+                <th onclick="sortTable(3)">Date</th>
             </tr>
         </thead>
         <tbody>
@@ -59,5 +68,61 @@
             {% endfor %}
         </tbody>
     </table>
+    <canvas id="sentimentChart" width="400" height="200"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Search filter
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            const filter = this.value.toUpperCase();
+            const rows = document.querySelectorAll('#trendsTable tbody tr');
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                const match = Array.from(cells).some(cell => cell.textContent.toUpperCase().includes(filter));
+                row.style.display = match ? '' : 'none';
+            });
+        });
+
+        // Sort table
+        function sortTable(columnIndex) {
+            const table = document.getElementById('trendsTable');
+            const rows = Array.from(table.rows).slice(1);
+            const isNumeric = !isNaN(rows[0].cells[columnIndex].textContent);
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].textContent;
+                const bText = b.cells[columnIndex].textContent;
+                return isNumeric ? aText - bText : aText.localeCompare(bText);
+            });
+            rows.forEach(row => table.appendChild(row));
+        }
+
+        // Sentiment data for the chart
+        const sentimentData = {
+            labels: [{% for trend in trends %}"{{ trend[1] }}",{% endfor %}],
+            datasets: [{
+                label: 'Sentiment',
+                data: [{% for trend in trends %}{{ trend[2] }},{% endfor %}],
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                borderColor: 'rgba(0, 123, 255, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Config and render the chart
+        const ctx = document.getElementById('sentimentChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: sentimentData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Sentiment Analysis of Trends' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
