@@ -17,6 +17,11 @@
         .table th {
             cursor: pointer;
         }
+        canvas {
+            max-width: 600px;
+            max-height: 400px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
@@ -57,7 +62,7 @@
                     </tbody>
                 </table>
                 <div class="mt-4">
-                    <canvas id="rssChart"></canvas>
+                    <canvas id="rssChart" width="600" height="400"></canvas>
                 </div>
             </div>
             <!-- Google Trends -->
@@ -83,7 +88,7 @@
                     </tbody>
                 </table>
                 <div class="mt-4">
-                    <canvas id="googleChart"></canvas>
+                    <canvas id="googleChart" width="600" height="400"></canvas>
                 </div>
             </div>
             <!-- Reddit Trends -->
@@ -109,19 +114,19 @@
                     </tbody>
                 </table>
                 <div class="mt-4">
-                    <canvas id="redditChart"></canvas>
+                    <canvas id="redditChart" width="600" height="400"></canvas>
                 </div>
             </div>
         </div>
         <!-- Круговая диаграмма -->
         <div class="mt-5">
             <h2>Source Distribution</h2>
-            <canvas id="sourceChart"></canvas>
+            <canvas id="sourceChart" width="600" height="400"></canvas>
         </div>
         <!-- Линейный график -->
         <div class="mt-5">
             <h2>Sentiment Over Time</h2>
-            <canvas id="sentimentLineChart"></canvas>
+            <canvas id="sentimentLineChart" width="600" height="400"></canvas>
         </div>
     </div>
     <!-- Bootstrap JS -->
