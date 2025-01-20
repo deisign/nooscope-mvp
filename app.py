@@ -75,12 +75,14 @@ def fetch_reddit_trends():
 # Fetch Twitter Trends
 def fetch_twitter_trends():
     client = tweepy.Client(bearer_token='AAAAAAAAAAAAAAAAAAAAACBnyQEAAAAAswY40ue8%2FaTrgouJcqlpHqwrkRw%3DHP9019TkXpIfad8tZ1s6IPJho5TSxb7w5Yurz9q1eRkCx8WtmK')
-    trends = client.get_place_trends(id=1)  # ID 1 = Worldwide
-    for trend in trends[0]['trends'][:10]:
-        topic = trend['name']
-        content = f"Trending on Twitter: {topic}"
-        sentiment = TextBlob(content).sentiment.polarity
-        save_to_db("Twitter Trends", topic, content, sentiment, "Unknown")
+    # Twitter trends use a direct API request for WOEID
+    trends = client.get_trends_place(id=1)  # WOEID 1 = Worldwide
+    if trends:
+        for trend in trends[0]['trends'][:10]:
+            topic = trend['name']
+            content = f"Trending on Twitter: {topic}"
+            sentiment = TextBlob(content).sentiment.polarity
+            save_to_db("Twitter Trends", topic, content, sentiment, "Unknown")
 
 # Flask routes
 @app.route('/')
