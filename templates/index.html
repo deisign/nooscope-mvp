@@ -4,21 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nooscope Trends</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
     <h1>Nooscope Trends</h1>
-    {% if trends %}
-        <ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Source</th>
+                <th>Topic</th>
+                <th>Sentiment</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for trend in trends %}
-                <li>
-                    <strong>{{ trend[1] }}</strong> (Source: {{ trend[0] }})<br>
-                    Sentiment: {{ trend[2] }}<br>
-                    Published: {{ trend[3] }}
-                </li>
+            <tr>
+                <td>{{ trend[0] }}</td>
+                <td>{{ trend[1] }}</td>
+                <td>{{ trend[2] | round(2) }}</td>
+                <td>{{ trend[3] }}</td>
+            </tr>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>No trends available. Fetch or add some data!</p>
-    {% endif %}
+        </tbody>
+    </table>
 </body>
 </html>
