@@ -5,123 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nooscope Trends</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 20px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            cursor: pointer;
-        }
-        th {
-            background-color: #007BFF;
-            color: #fff;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        nav { margin-bottom: 20px; }
+        nav a { padding: 10px 20px; background: #007BFF; color: white; text-decoration: none; border-radius: 5px; margin-right: 5px; }
+        nav a.active { background: #0056b3; }
+        section { display: none; }
+        section.active { display: block; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
+        th, td { padding: 10px; text-align: left; }
+        th { background: #007BFF; color: white; }
+        tr:nth-child(even) { background: #f2f2f2; }
     </style>
 </head>
 <body>
     <h1>Nooscope Trends</h1>
-    <input type="text" id="searchInput" placeholder="Search for topics...">
-    <table id="trendsTable">
-        <thead>
-            <tr>
-                <th onclick="sortTable(0)">Source</th>
-                <th onclick="sortTable(1)">Topic</th>
-                <th onclick="sortTable(2)">Sentiment</th>
-                <th onclick="sortTable(3)">Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for trend in trends %}
-            <tr>
-                <td>{{ trend[0] }}</td>
-                <td>{{ trend[1] }}</td>
-                <td>{{ trend[2] | round(2) }}</td>
-                <td>{{ trend[3] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <canvas id="sentimentChart" width="400" height="200"></canvas>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <nav>
+        <a href="#" class="tab active" data-tab="rss">RSS Feeds</a>
+        <a href="#" class="tab" data-tab="google">Google Trends</a>
+        <a href="#" class="tab" data-tab="reddit">Reddit Trends</a>
+    </nav>
+
+    <section id="rss" class="active">
+        <h2>RSS Feeds</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Sentiment</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trend in rss_data %}
+                <tr>
+                    <td>{{ trend[0] }}</td>
+                    <td>{{ trend[1] | round(2) }}</td>
+                    <td>{{ trend[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section id="google">
+        <h2>Google Trends</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Sentiment</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trend in google_data %}
+                <tr>
+                    <td>{{ trend[0] }}</td>
+                    <td>{{ trend[1] | round(2) }}</td>
+                    <td>{{ trend[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section id="reddit">
+        <h2>Reddit Trends</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Sentiment</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trend in reddit_data %}
+                <tr>
+                    <td>{{ trend[0] }}</td>
+                    <td>{{ trend[1] | round(2) }}</td>
+                    <td>{{ trend[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
     <script>
-        // Search filter
-        document.getElementById('searchInput').addEventListener('keyup', function () {
-            const filter = this.value.toUpperCase();
-            const rows = document.querySelectorAll('#trendsTable tbody tr');
-            rows.forEach(row => {
-                const cells = row.getElementsByTagName('td');
-                const match = Array.from(cells).some(cell => cell.textContent.toUpperCase().includes(filter));
-                row.style.display = match ? '' : 'none';
+        // Handle tab switching
+        const tabs = document.querySelectorAll('.tab');
+        const sections = document.querySelectorAll('section');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', e => {
+                e.preventDefault();
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const target = tab.dataset.tab;
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === target) section.classList.add('active');
+                });
             });
-        });
-
-        // Sort table
-        function sortTable(columnIndex) {
-            const table = document.getElementById('trendsTable');
-            const rows = Array.from(table.rows).slice(1);
-            const isNumeric = !isNaN(rows[0].cells[columnIndex].textContent);
-            rows.sort((a, b) => {
-                const aText = a.cells[columnIndex].textContent;
-                const bText = b.cells[columnIndex].textContent;
-                return isNumeric ? aText - bText : aText.localeCompare(bText);
-            });
-            rows.forEach(row => table.appendChild(row));
-        }
-
-        // Sentiment data for the chart
-        const sentimentData = {
-            labels: [{% for trend in trends %}"{{ trend[1] }}",{% endfor %}],
-            datasets: [{
-                label: 'Sentiment',
-                data: [{% for trend in trends %}{{ trend[2] }},{% endfor %}],
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                borderColor: 'rgba(0, 123, 255, 1)',
-                borderWidth: 1
-            }]
-        };
-
-        // Config and render the chart
-        const ctx = document.getElementById('sentimentChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: sentimentData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: { display: true, text: 'Sentiment Analysis of Trends' }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
         });
     </script>
 </body>
