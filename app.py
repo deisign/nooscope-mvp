@@ -30,10 +30,30 @@ def init_db():
 def save_to_db(source, topic, content, sentiment, date):
     conn = sqlite3.connect('noscope.db')
     cursor = conn.cursor()
+    # Check for duplicates
     cursor.execute('''
-        INSERT INTO trends (source, topic, content, sentiment, date)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (source, topic, content, sentiment, date))
+        SELECT COUNT(*) FROM trends WHERE source = ? AND topic = ? AND content = ?
+    ''', (source, topic, content))
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('''
+            INSERT INTO trends (source, topic, content, sentiment, date)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (source, topic, content, sentiment, date))
+    conn.commit()
+    conn.close()
+
+# Remove duplicates from the database
+def remove_duplicates():
+    conn = sqlite3.connect('noscope.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        DELETE FROM trends
+        WHERE id NOT IN (
+            SELECT MIN(id)
+            FROM trends
+            GROUP BY source, topic, content
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -90,6 +110,7 @@ def add_source():
 # Initialize database and fetch initial data
 if __name__ == '__main__':
     init_db()
+    remove_duplicates()  # Clean up duplicates
     fetch_google_trends()
     fetch_reddit_trends()
     fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml")
