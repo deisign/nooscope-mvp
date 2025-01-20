@@ -30,52 +30,45 @@ def init_db():
 def save_to_db(source, topic, content, sentiment, date):
     conn = sqlite3.connect('noscope.db')
     cursor = conn.cursor()
-    # Check for duplicates
     cursor.execute('''
-        SELECT COUNT(*) FROM trends WHERE source = ? AND topic = ? AND content = ?
-    ''', (source, topic, content))
-    if cursor.fetchone()[0] == 0:
-        cursor.execute('''
-            INSERT INTO trends (source, topic, content, sentiment, date)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (source, topic, content, sentiment, date))
+        INSERT INTO trends (source, topic, content, sentiment, date)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (source, topic, content, sentiment, date))
     conn.commit()
     conn.close()
 
-# Remove duplicates from the database
-def remove_duplicates():
+# Print all data from the database
+def print_all_data():
     conn = sqlite3.connect('noscope.db')
     cursor = conn.cursor()
-    cursor.execute('''
-        DELETE FROM trends
-        WHERE id NOT IN (
-            SELECT MIN(id)
-            FROM trends
-            GROUP BY source, topic, content
-        )
-    ''')
-    conn.commit()
+    cursor.execute("SELECT * FROM trends")
+    rows = cursor.fetchall()
     conn.close()
+    print(f"All data in database: {rows}")
 
 # Fetch data from an RSS feed
 def fetch_rss_feed(feed_url):
     feed = feedparser.parse(feed_url)
+    print(f"Fetching RSS feed: {feed_url}")
     for entry in feed.entries:
         topic = entry.title
         content = entry.summary if 'summary' in entry else entry.description
         sentiment = TextBlob(content).sentiment.polarity
         date = entry.published if 'published' in entry else "Unknown"
         save_to_db("RSS Feed", topic, content, sentiment, date)
+        print(f"Added RSS trend: {topic} with sentiment {sentiment}")
 
 # Fetch Google Trends
 def fetch_google_trends():
     pytrends = TrendReq(hl='en-US', tz=360)
     trending_searches = pytrends.trending_searches()
+    print("Fetching Google Trends...")
     for index, row in trending_searches.iterrows():
         topic = row[0]
         content = f"Trending on Google: {topic}"
         sentiment = TextBlob(content).sentiment.polarity
         save_to_db("Google Trends", topic, content, sentiment, "Unknown")
+        print(f"Added Google trend: {topic} with sentiment {sentiment}")
 
 # Fetch Reddit Trends
 def fetch_reddit_trends():
@@ -84,22 +77,36 @@ def fetch_reddit_trends():
         client_secret='kbaq0S-FnCuyCCueBUddQDwa-U4YjQ',
         user_agent='nooscope'
     )
+    print("Fetching Reddit Trends...")
     for submission in reddit.subreddit('all').hot(limit=10):
         topic = submission.title
         content = f"Trending on Reddit: {topic}"
         sentiment = TextBlob(content).sentiment.polarity
         date = submission.created_utc
         save_to_db("Reddit Trends", topic, content, sentiment, date)
+        print(f"Added Reddit trend: {topic} with sentiment {sentiment}")
+    print("Finished fetching Reddit Trends.")
 
 # Flask routes
 @app.route('/')
 def index():
     conn = sqlite3.connect('noscope.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT source, topic, sentiment, date FROM trends ORDER BY date DESC LIMIT 100")
-    rows = cursor.fetchall()
+    # Разделяем данные по источникам
+    cursor.execute("SELECT topic, sentiment, date FROM trends WHERE source = 'RSS Feed'")
+    rss_data = cursor.fetchall()
+    cursor.execute("SELECT topic, sentiment, date FROM trends WHERE source = 'Google Trends'")
+    google_data = cursor.fetchall()
+    cursor.execute("SELECT topic, sentiment, date FROM trends WHERE source = 'Reddit Trends'")
+    reddit_data = cursor.fetchall()
     conn.close()
-    return render_template('index.html', trends=rows)
+
+    # Логируем данные
+    print(f"RSS Data: {rss_data}")
+    print(f"Google Trends Data: {google_data}")
+    print(f"Reddit Data: {reddit_data}")
+
+    return render_template('index.html', rss_data=rss_data, google_data=google_data, reddit_data=reddit_data)
 
 @app.route('/add-source', methods=['POST'])
 def add_source():
@@ -110,11 +117,8 @@ def add_source():
 # Initialize database and fetch initial data
 if __name__ == '__main__':
     init_db()
-    remove_duplicates()  # Clean up duplicates
     fetch_google_trends()
     fetch_reddit_trends()
     fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml")
-    fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/World.xml")
-    fetch_rss_feed("https://feeds.bbci.co.uk/news/rss.xml")
-    fetch_rss_feed("https://www.theguardian.com/world/rss")
+    print_all_data()  # Логируем все данные из базы
     app.run(host="0.0.0.0", port=5000, debug=True)
