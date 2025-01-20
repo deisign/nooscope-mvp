@@ -3,6 +3,7 @@ import sqlite3
 from bs4 import BeautifulSoup
 from textblob import TextBlob
 from flask import Flask, render_template, request
+import feedparser
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -50,6 +51,16 @@ def fetch_news():
             date = article['publishedAt']
             save_to_db(source, topic, content, sentiment, date)
 
+# Fetch data from an RSS feed
+def fetch_rss_feed(feed_url):
+    feed = feedparser.parse(feed_url)
+    for entry in feed.entries:
+        topic = entry.title
+        content = entry.summary if 'summary' in entry else entry.description
+        sentiment = TextBlob(content).sentiment.polarity
+        date = entry.published if 'published' in entry else "Unknown"
+        save_to_db("RSS Feed", topic, content, sentiment, date)
+
 # Web scraper for additional sources
 def scrape_website(url):
     response = requests.get(url)
@@ -81,4 +92,5 @@ def add_source():
 if __name__ == '__main__':
     init_db()
     fetch_news()
+    fetch_rss_feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml")
     app.run(host="0.0.0.0", port=5000, debug=True)
