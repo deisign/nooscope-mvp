@@ -37,7 +37,7 @@ def save_to_db(source, topic, content, sentiment, date):
 
 # Fetch data from a news API
 def fetch_news():
-    api_key = "your_api_key_here"  # Replace with your API key
+    api_key = "884e81da0bee450c8fa466e3db90efc9"  # Replace with your API key
     url = f"https://newsapi.org/v2/top-headlines?country=us&apiKey={api_key}"
     response = requests.get(url)
     if response.status_code == 200:
