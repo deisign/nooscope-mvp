@@ -5,5 +5,5 @@ beautifulsoup4==4.11.1
 textblob==0.17.1
 feedparser==6.0.10
 pytrends==4.8.0
-praw==7.8.1
+praw>=7.8.1
 tweepy>=4.13.0

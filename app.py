@@ -75,12 +75,11 @@ def fetch_reddit_trends():
 # Fetch Twitter Trends
 def fetch_twitter_trends():
     client = tweepy.Client(bearer_token='AAAAAAAAAAAAAAAAAAAAACBnyQEAAAAAswY40ue8%2FaTrgouJcqlpHqwrkRw%3DHP9019TkXpIfad8tZ1s6IPJho5TSxb7w5Yurz9q1eRkCx8WtmK')
-    # Twitter trends use a direct API request for WOEID
-    trends = client.get_trends_place(id=1)  # WOEID 1 = Worldwide
-    if trends:
-        for trend in trends[0]['trends'][:10]:
-            topic = trend['name']
-            content = f"Trending on Twitter: {topic}"
+    response = client.search_recent_tweets(query="#", max_results=10)
+    if response.data:
+        for tweet in response.data:
+            topic = tweet.text[:50]  # Truncate to 50 characters
+            content = f"Trending Tweet: {tweet.text}"
             sentiment = TextBlob(content).sentiment.polarity
             save_to_db("Twitter Trends", topic, content, sentiment, "Unknown")
 
