@@ -113,6 +113,16 @@
                 </div>
             </div>
         </div>
+        <!-- Круговая диаграмма -->
+        <div class="mt-5">
+            <h2>Source Distribution</h2>
+            <canvas id="sourceChart"></canvas>
+        </div>
+        <!-- Линейный график -->
+        <div class="mt-5">
+            <h2>Sentiment Over Time</h2>
+            <canvas id="sentimentLineChart"></canvas>
+        </div>
     </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -171,16 +181,44 @@
             });
         };
 
-        // Данные для графиков
-        const rssData = [{% for trend in rss_data %}{{ trend[1] }},{% endfor %}];
-        const googleData = [{% for trend in google_data %}{{ trend[1] }},{% endfor %}];
-        const redditData = [{% for trend in reddit_data %}{{ trend[1] }},{% endfor %}];
-        const labels = [{% for trend in rss_data %}"{{ trend[0] }}",{% endfor %}];
+        // Круговая диаграмма
+        const sourceData = {
+            labels: ['RSS Feeds', 'Google Trends', 'Reddit Trends'],
+            datasets: [{
+                label: 'Source Distribution',
+                data: [
+                    {{ rss_data|length }},
+                    {{ google_data|length }},
+                    {{ reddit_data|length }}
+                ],
+                backgroundColor: ['#007BFF', '#FFC107', '#28A745'],
+                hoverOffset: 4
+            }]
+        };
 
-        // Создаём графики
-        createChart('rssChart', rssData, labels);
-        createChart('googleChart', googleData, labels);
-        createChart('redditChart', redditData, labels);
-    </script>
-</body>
-</html>
+        const sourceCtx = document.getElementById('sourceChart').getContext('2d');
+        new Chart(sourceCtx, {
+            type: 'doughnut',
+            data: sourceData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Data Source Distribution' }
+                }
+            }
+        });
+
+        // Линейный график
+        const lineLabels = [
+            {% for trend in rss_data %}"{{ trend[2] }}",{% endfor %}
+            {% for trend in google_data %}"{{ trend[2] }}",{% endfor %}
+            {% for trend in reddit_data %}"{{ trend[2] }}",{% endfor %}
+        ];
+        const lineData = [
+            {% for trend in rss_data %}{{ trend[1] }},{% endfor %}
+            {% for trend in google_data %}{{ trend[1] }},{% endfor %}
+            {% for trend in reddit_data %}{{ trend[1] }},{% endfor %}
+        ];
+
+        const lineCtx = document.getElementById('sentiment
