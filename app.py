@@ -6,6 +6,7 @@ import feedparser
 import praw
 import tweepy
 from pytrends.request import TrendReq
+import time
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -75,13 +76,18 @@ def fetch_reddit_trends():
 # Fetch Twitter Trends
 def fetch_twitter_trends():
     client = tweepy.Client(bearer_token='AAAAAAAAAAAAAAAAAAAAACBnyQEAAAAAswY40ue8%2FaTrgouJcqlpHqwrkRw%3DHP9019TkXpIfad8tZ1s6IPJho5TSxb7w5Yurz9q1eRkCx8WtmK')
-    response = client.search_recent_tweets(query="#", max_results=10)
-    if response.data:
-        for tweet in response.data:
-            topic = tweet.text[:50]  # Truncate to 50 characters
-            content = f"Trending Tweet: {tweet.text}"
-            sentiment = TextBlob(content).sentiment.polarity
-            save_to_db("Twitter Trends", topic, content, sentiment, "Unknown")
+    try:
+        response = client.search_recent_tweets(query="#", max_results=10)
+        if response.data:
+            for tweet in response.data:
+                topic = tweet.text[:50]  # Truncate to 50 characters
+                content = f"Trending Tweet: {tweet.text}"
+                sentiment = TextBlob(content).sentiment.polarity
+                save_to_db("Twitter Trends", topic, content, sentiment, "Unknown")
+        time.sleep(15)  # Add delay to respect rate limits
+    except tweepy.errors.TooManyRequests:
+        print("Rate limit exceeded. Waiting before retrying...")
+        time.sleep(900)  # Wait 15 minutes before retrying
 
 # Flask routes
 @app.route('/')
