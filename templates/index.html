@@ -4,110 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nooscope Trends</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #333; }
-        nav { margin-bottom: 20px; }
-        nav a { padding: 10px 20px; background: #007BFF; color: white; text-decoration: none; border-radius: 5px; margin-right: 5px; }
-        nav a.active { background: #0056b3; }
-        section { display: none; }
-        section.active { display: block; }
-        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
-        th, td { padding: 10px; text-align: left; }
-        th { background: #007BFF; color: white; }
-        tr:nth-child(even) { background: #f2f2f2; }
-    </style>
 </head>
 <body>
     <h1>Nooscope Trends</h1>
-    <nav>
-        <a href="#" class="tab active" data-tab="rss">RSS Feeds</a>
-        <a href="#" class="tab" data-tab="google">Google Trends</a>
-        <a href="#" class="tab" data-tab="reddit">Reddit Trends</a>
-    </nav>
+    <h2>RSS Feeds</h2>
+    <ul>
+        {% for trend in rss_data %}
+        <li>{{ trend[0] }} - {{ trend[1] }} - {{ trend[2] }}</li>
+        {% endfor %}
+    </ul>
 
-    <section id="rss" class="active">
-        <h2>RSS Feeds</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Topic</th>
-                    <th>Sentiment</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for trend in rss_data %}
-                <tr>
-                    <td>{{ trend[0] }}</td>
-                    <td>{{ trend[1] | round(2) }}</td>
-                    <td>{{ trend[2] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+    <h2>Google Trends</h2>
+    <ul>
+        {% for trend in google_data %}
+        <li>{{ trend[0] }} - {{ trend[1] }} - {{ trend[2] }}</li>
+        {% endfor %}
+    </ul>
 
-    <section id="google">
-        <h2>Google Trends</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Topic</th>
-                    <th>Sentiment</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for trend in google_data %}
-                <tr>
-                    <td>{{ trend[0] }}</td>
-                    <td>{{ trend[1] | round(2) }}</td>
-                    <td>{{ trend[2] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
-
-    <section id="reddit">
-        <h2>Reddit Trends</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Topic</th>
-                    <th>Sentiment</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for trend in reddit_data %}
-                <tr>
-                    <td>{{ trend[0] }}</td>
-                    <td>{{ trend[1] | round(2) }}</td>
-                    <td>{{ trend[2] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
-
-    <script>
-        // Handle tab switching
-        const tabs = document.querySelectorAll('.tab');
-        const sections = document.querySelectorAll('section');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', e => {
-                e.preventDefault();
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const target = tab.dataset.tab;
-                sections.forEach(section => {
-                    section.classList.remove('active');
-                    if (section.id === target) section.classList.add('active');
-                });
-            });
-        });
-    </script>
+    <h2>Reddit Trends</h2>
+    <ul>
+        {% for trend in reddit_data %}
+        <li>{{ trend[0] }} - {{ trend[1] }} - {{ trend[2] }}</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
