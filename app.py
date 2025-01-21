@@ -27,28 +27,33 @@ def generate_summary(data):
 @app.route('/')
 def index():
     try:
+        print("Connecting to database...")
         conn = sqlite3.connect('noscope.db')
         cursor = conn.cursor()
 
         # Получаем данные для вкладок
+        print("Fetching RSS data...")
         cursor.execute("SELECT topic, sentiment, date FROM trends WHERE source = 'RSS Feed'")
         rss_data = cursor.fetchall()
-        print("RSS Data:", rss_data)
+        print(f"RSS Data: {rss_data}")
 
+        print("Fetching Google Trends data...")
         cursor.execute("SELECT topic, sentiment, date FROM trends WHERE source = 'Google Trends'")
         google_data = cursor.fetchall()
-        print("Google Data:", google_data)
+        print(f"Google Data: {google_data}")
 
+        print("Fetching Reddit Trends data...")
         cursor.execute("SELECT topic, sentiment, date FROM trends WHERE source = 'Reddit Trends'")
         reddit_data = cursor.fetchall()
-        print("Reddit Data:", reddit_data)
+        print(f"Reddit Data: {reddit_data}")
 
         conn.close()
 
-        # Генерация саммари
+        print("Generating summaries...")
         rss_summary = generate_summary(rss_data)
         google_summary = generate_summary(google_data)
         reddit_summary = generate_summary(reddit_data)
+        print("Summaries generated successfully.")
 
         return render_template(
             'index.html',
@@ -60,7 +65,7 @@ def index():
             reddit_summary=reddit_summary
         )
     except Exception as e:
-        print("Error in index:", e)
+        print(f"Error in index: {e}")
         return "Failed to load data", 500
 
 if __name__ == '__main__':
