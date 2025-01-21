@@ -1,1 +1,0 @@
-# nooscope-mvp
