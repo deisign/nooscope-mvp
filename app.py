@@ -1,10 +1,11 @@
+import os
 from flask import Flask, render_template
 import sqlite3
-import os
 
+# Создаём приложение Flask
 app = Flask(__name__)
 
-# Убедимся, что база данных существует и инициализируем её
+# Проверяем существование базы данных и инициализируем её
 DB_PATH = 'db/noscope.db'
 if not os.path.exists('db'):
     os.makedirs('db')
@@ -23,13 +24,14 @@ if not os.path.exists(DB_PATH):
     conn.commit()
     conn.close()
 
+# Маршрут для главной страницы
 @app.route('/')
 def index():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Получение данных из базы данных
+        # Запрашиваем данные из базы
         cursor.execute("SELECT topic, sentiment, date FROM trends WHERE source = 'RSS Feed'")
         rss_data = cursor.fetchall()
 
@@ -50,4 +52,6 @@ def index():
     return render_template('index.html', rss_data=rss_data, google_data=google_data, reddit_data=reddit_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Используем переменную окружения PORT для Railway
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
