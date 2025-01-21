@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nooscope Trends</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -14,44 +13,35 @@
         .tab-content {
             margin-top: 20px;
         }
-        .table th {
-            cursor: pointer;
-        }
-        canvas {
-            max-width: 600px;
-            max-height: 400px;
-            margin: 0 auto;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center">Nooscope Trends</h1>
         <ul class="nav nav-tabs" id="sourceTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="rss-tab" data-bs-toggle="tab" data-bs-target="#rss" type="button" role="tab">RSS Feeds</button>
+            <li class="nav-item">
+                <button class="nav-link active" id="rss-tab" data-bs-toggle="tab" data-bs-target="#rss" type="button">RSS Feeds</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="google-tab" data-bs-toggle="tab" data-bs-target="#google" type="button" role="tab">Google Trends</button>
+            <li class="nav-item">
+                <button class="nav-link" id="google-tab" data-bs-toggle="tab" data-bs-target="#google" type="button">Google Trends</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="reddit-tab" data-bs-toggle="tab" data-bs-target="#reddit" type="button" role="tab">Reddit Trends</button>
+            <li class="nav-item">
+                <button class="nav-link" id="reddit-tab" data-bs-toggle="tab" data-bs-target="#reddit" type="button">Reddit Trends</button>
             </li>
         </ul>
-        <div class="tab-content" id="sourceTabsContent">
+        <div class="tab-content">
             <!-- RSS Feeds -->
-            <div class="tab-pane fade show active" id="rss" role="tabpanel" aria-labelledby="rss-tab">
+            <div class="tab-pane fade show active" id="rss">
                 <h2>RSS Feeds</h2>
-                <input type="text" class="form-control mb-3" id="rssSearch" placeholder="Search RSS Feeds">
-                <table class="table table-striped table-bordered">
+                <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th onclick="sortTable('rssTable', 0)">Topic</th>
-                            <th onclick="sortTable('rssTable', 1)">Sentiment</th>
-                            <th onclick="sortTable('rssTable', 2)">Date</th>
+                            <th>Topic</th>
+                            <th>Sentiment</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody id="rssTable">
+                    <tbody>
                         {% for trend in rss_data %}
                         <tr>
                             <td>{{ trend[0] }}</td>
@@ -61,23 +51,24 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <div class="mt-4">
-                    <canvas id="rssChart" width="600" height="400"></canvas>
+                <div>
+                    <h3>Summary</h3>
+                    <p><strong>Top Keywords:</strong> {{ rss_summary['keywords'] }}</p>
+                    <p><strong>Overall Sentiment:</strong> {{ rss_summary['sentiment'] | round(2) }}</p>
                 </div>
             </div>
             <!-- Google Trends -->
-            <div class="tab-pane fade" id="google" role="tabpanel" aria-labelledby="google-tab">
+            <div class="tab-pane fade" id="google">
                 <h2>Google Trends</h2>
-                <input type="text" class="form-control mb-3" id="googleSearch" placeholder="Search Google Trends">
-                <table class="table table-striped table-bordered">
+                <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th onclick="sortTable('googleTable', 0)">Topic</th>
-                            <th onclick="sortTable('googleTable', 1)">Sentiment</th>
-                            <th onclick="sortTable('googleTable', 2)">Date</th>
+                            <th>Topic</th>
+                            <th>Sentiment</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody id="googleTable">
+                    <tbody>
                         {% for trend in google_data %}
                         <tr>
                             <td>{{ trend[0] }}</td>
@@ -87,23 +78,24 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <div class="mt-4">
-                    <canvas id="googleChart" width="600" height="400"></canvas>
+                <div>
+                    <h3>Summary</h3>
+                    <p><strong>Top Keywords:</strong> {{ google_summary['keywords'] }}</p>
+                    <p><strong>Overall Sentiment:</strong> {{ google_summary['sentiment'] | round(2) }}</p>
                 </div>
             </div>
             <!-- Reddit Trends -->
-            <div class="tab-pane fade" id="reddit" role="tabpanel" aria-labelledby="reddit-tab">
+            <div class="tab-pane fade" id="reddit">
                 <h2>Reddit Trends</h2>
-                <input type="text" class="form-control mb-3" id="redditSearch" placeholder="Search Reddit Trends">
-                <table class="table table-striped table-bordered">
+                <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th onclick="sortTable('redditTable', 0)">Topic</th>
-                            <th onclick="sortTable('redditTable', 1)">Sentiment</th>
-                            <th onclick="sortTable('redditTable', 2)">Date</th>
+                            <th>Topic</th>
+                            <th>Sentiment</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody id="redditTable">
+                    <tbody>
                         {% for trend in reddit_data %}
                         <tr>
                             <td>{{ trend[0] }}</td>
@@ -113,105 +105,14 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <div class="mt-4">
-                    <canvas id="redditChart" width="600" height="400"></canvas>
+                <div>
+                    <h3>Summary</h3>
+                    <p><strong>Top Keywords:</strong> {{ reddit_summary['keywords'] }}</p>
+                    <p><strong>Overall Sentiment:</strong> {{ reddit_summary['sentiment'] | round(2) }}</p>
                 </div>
             </div>
         </div>
-        <!-- Круговая диаграмма -->
-        <div class="mt-5">
-            <h2>Source Distribution</h2>
-            <canvas id="sourceChart" width="600" height="400"></canvas>
-        </div>
-        <!-- Линейный график -->
-        <div class="mt-5">
-            <h2>Sentiment Over Time</h2>
-            <canvas id="sentimentLineChart" width="600" height="400"></canvas>
-        </div>
     </div>
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Search functionality
-        document.querySelectorAll('input[type="text"]').forEach(input => {
-            input.addEventListener('input', function () {
-                const filter = this.value.toUpperCase();
-                const rows = document.querySelectorAll(`#${this.id.replace('Search', 'Table')} tr`);
-                rows.forEach(row => {
-                    const cells = row.getElementsByTagName('td');
-                    const match = Array.from(cells).some(cell => cell.textContent.toUpperCase().includes(filter));
-                    row.style.display = match ? '' : 'none';
-                });
-            });
-        });
-
-        // Sort table functionality
-        function sortTable(tableId, colIndex) {
-            const table = document.getElementById(tableId);
-            const rows = Array.from(table.rows);
-            rows.sort((a, b) => {
-                const aText = a.cells[colIndex].textContent;
-                const bText = b.cells[colIndex].textContent;
-                return isNaN(aText - bText) ? aText.localeCompare(bText) : aText - bText;
-            });
-            rows.forEach(row => table.appendChild(row));
-        }
-
-        // Тестовые данные для проверки графиков
-        const testLabels = ['2023-01-01', '2023-01-02', '2023-01-03'];
-        const testData = [10, 20, 30];
-
-        // Круговая диаграмма
-        const sourceData = {
-            labels: ['RSS Feeds', 'Google Trends', 'Reddit Trends'],
-            datasets: [{
-                label: 'Source Distribution',
-                data: [50, 30, 20], // Тестовые данные
-                backgroundColor: ['#007BFF', '#FFC107', '#28A745'],
-                hoverOffset: 4
-            }]
-        };
-
-        const sourceCtx = document.getElementById('sourceChart').getContext('2d');
-        new Chart(sourceCtx, {
-            type: 'doughnut',
-            data: sourceData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: { display: true, text: 'Data Source Distribution' }
-                }
-            }
-        });
-
-        // Линейный график
-        const lineCtx = document.getElementById('sentimentLineChart').getContext('2d');
-        new Chart(lineCtx, {
-            type: 'line',
-            data: {
-                labels: testLabels, // Тестовые данные
-                datasets: [{
-                    label: 'Sentiment',
-                    data: testData, // Тестовые данные
-                    borderColor: '#007BFF',
-                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: true },
-                    title: { display: true, text: 'Sentiment Over Time' }
-                },
-                scales: {
-                    x: { display: true, title: { display: true, text: 'Date' } },
-                    y: { display: true, title: { display: true, text: 'Sentiment' } }
-                }
-            }
-        });
-    </script>
 </body>
 </html>
